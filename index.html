@@ -2083,6 +2083,54 @@ footer {
 <body>
 
 
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "PUT_YOUR_REAL_API_KEY_HERE",
+  authDomain: "layla-binta-bah-farm.firebaseapp.com",
+  projectId: "layla-binta-bah-farm",
+  storageBucket: "layla-binta-bah-farm.appspot.com",
+  messagingSenderId: "1092991765925",
+  appId: "PUT_YOUR_REAL_APP_ID_HERE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.placeOrder = async function () {
+
+  const name = document.getElementById("name").value;
+  const products = document.getElementById("products").value;
+  const address = document.getElementById("address").value;
+  const contact = document.getElementById("contact").value;
+
+  if (!name || !products || !address || !contact) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "orders"), {
+      name,
+      products,
+      address,
+      contact,
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toLocaleTimeString(),
+      status: "pending"
+    });
+
+    alert("Order sent successfully!");
+  } catch (error) {
+    console.log(error);
+    alert("Error sending order. Check Firebase setup.");
+  }
+};
+</script>
+
+
   <!-- YOUR WEBSITE CONTENT ABOVE (navbar, products, forms, etc.) -->
 
 <input id="name" placeholder="Name">
@@ -3016,36 +3064,27 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFeaturedProducts();
 </script>
 
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "layla-binta-bah-farm.firebaseapp.com",
-    projectId: "layla-binta-bah-farm",
-    storageBucket: "layla-binta-bah-farm.firebasestorage.app",
-    messagingSenderId: "1092991765925",
-    appId: "YOUR_APP_ID"
-  };
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAb4bVnmWrT_F1hvbRtyW65u2prSQOuozU",
+  authDomain: "layla-binta-bah-farm.firebaseapp.com",
+  projectId: "layla-binta-bah-farm",
+  storageBucket: "layla-binta-bah-farm.firebasestorage.app",
+  messagingSenderId: "1092991765925",
+  appId: "1:1092991765925:web:e9fc4728705ed5d781ac4c",
+  measurementId: "G-EZW3FZ27XJ"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // This function saves an order to Firestore
-  window.placeOrder = async function () {
-    await addDoc(collection(db, "orders"), {
-      name: "fatou",
-      product: "goat",
-      address: "Njaba kunda",
-      contact: "5071630",
-      date: "2026-05-04",
-      time: "9:00"
-    });
-
-    alert("Order saved successfully!");
-  };
-</script>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 <nav class="bottom-nav">
   <a href="index.html" class="bnav-item active">
