@@ -2636,118 +2636,13 @@ const DEFAULT_ADMIN = {
   createdAt: new Date().toISOString()
 };
 
-const AuthManager = {
-  initUsers() {
-    const users = localStorage.getItem('users');
-    if (!users) {
-      localStorage.setItem('users', JSON.stringify([DEFAULT_ADMIN]));
-    } else {
-      // Ensure admin always exists
-      const parsed = JSON.parse(users);
-      const hasAdmin = parsed.find(u => u.email === 'bah899166@gmail.com');
-      if (!hasAdmin) {
-        parsed.push(DEFAULT_ADMIN);
-        localStorage.setItem('users', JSON.stringify(parsed));
-      }
-    }
-  },
 
-  getUsers() {
-    this.initUsers();
-    return JSON.parse(localStorage.getItem('users') || '[]');
-  },
+  
 
-  saveUsers(users) {
-    localStorage.setItem('users', JSON.stringify(users));
-  },
 
-  getCurrentUser() {
-    const u = localStorage.getItem('currentUser');
-    return u ? JSON.parse(u) : null;
-  },
 
-  register(name, email, password) {
-    const users = this.getUsers();
-    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-      return { success: false, error: 'Email already registered.' };
-    }
-    const newUser = {
-      id: 'u' + Date.now(),
-      name,
-      email,
-      password,
-      role: 'customer',
-      createdAt: new Date().toISOString()
-    };
-    users.push(newUser);
-    this.saveUsers(users);
-    return { success: true, user: newUser };
-  },
 
-  login(email, password) {
-    const users = this.getUsers();
-    const user = users.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-    if (!user) return { success: false, error: 'Invalid email or password.' };
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    return { success: true, user };
-  },
-
-  logout() {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'login.html';
-  },
-
-  isLoggedIn() {
-    return !!this.getCurrentUser();
-  },
-
-  isAdmin() {
-    const u = this.getCurrentUser();
-    return u && u.role === 'admin';
-  },
-
-  requireAuth(redirect = 'login.html') {
-    if (!this.isLoggedIn()) {
-      window.location.href = redirect;
-      return false;
-    }
-    return true;
-  },
-
-  requireAdmin() {
-    if (!this.isAdmin()) {
-      window.location.href = 'index.html';
-      return false;
-    }
-    return true;
-  },
-
-  updateNavAuth() {
-    const user = this.getCurrentUser();
-    const loginLinks = document.querySelectorAll('.nav-login-link');
-    const userMenus = document.querySelectorAll('.nav-user-menu');
-    const adminLinks = document.querySelectorAll('.nav-admin-link');
-
-    if (user) {
-      loginLinks.forEach(el => el.classList.add('hidden'));
-      userMenus.forEach(el => {
-        el.classList.remove('hidden');
-        const nameEl = el.querySelector('.user-name');
-        if (nameEl) nameEl.textContent = user.name.split(' ')[0];
-      });
-      if (user.role === 'admin') {
-        adminLinks.forEach(el => el.classList.remove('hidden'));
-      }
-    } else {
-      loginLinks.forEach(el => el.classList.remove('hidden'));
-      userMenus.forEach(el => el.classList.add('hidden'));
-      adminLinks.forEach(el => el.classList.add('hidden'));
-    }
-  }
-};
-
+  
 // Initialize users on load
 AuthManager.initUsers();
 
