@@ -3025,6 +3025,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function orderViaWhatsApp() {
+    const product = ProductManager.getById(productId);
+    if (!product) {
+      showToast('Product not found', 'error');
+      return;
+    }
+    
+    // Generate unique order ID
+    const generateOrderId = () => {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      return `ORD-${year}-${month}${day}-${random}`;
+    };
+    
+    const orderId = generateOrderId();
+    
+    // Compose WhatsApp message
+    const whatsappNumber = '8527670099';
+    let message = `*New Order from Layla Binta Bah Farm*\n\n`;
+    message += `*Order ID:* ${orderId}\n`;
+    message += `*Product:* ${product.name}\n`;
+    message += `*Quantity:* ${currentQty}\n`;
+    message += `*Price:* GMD ${(product.price * currentQty).toLocaleString()}\n`;
+    message += `*Order Date:* ${new Date().toLocaleString()}\n`;
+    message += `\nPlease keep Order ID (${orderId}) for reference.`;
+    
+    // Save order to localStorage
+    const orderData = {
+      id: orderId,
+      items: [{
+        name: product.name,
+        quantity: currentQty,
+        price: product.price
+      }],
+      total: product.price * currentQty,
+      date: new Date().toLocaleString(),
+      status: 'pending',
+      payment: 'WhatsApp Order'
+    };
+    
+    // Save order to localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+    existingOrders.unshift(orderData);
+    localStorage.setItem('userOrders', JSON.stringify(existingOrders));
+    console.log('Order saved to localStorage fallback');
+    
+    const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Try multiple methods to open WhatsApp
+    try {
+      window.open(waUrl, '_blank');
+    } catch (e) {
+      try {
+        // Fallback: Copy to clipboard
+        navigator.clipboard.writeText(waUrl).then(() => {
+          alert('WhatsApp link copied to clipboard! Please paste in your browser: ' + waUrl);
+        }).catch(() => {
+          alert('Please manually open WhatsApp and send this message: ' + message);
+        });
+      } catch (e2) {
+        alert('Please manually open WhatsApp and send this message: ' + message);
+      }
+    }
+  }
+
   function switchTab(tab, btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -3075,11 +3143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <span class="bnav-badge" id="bnav-cart-count">0</span>
     <span>Cart</span>
   </a>
-  <a href="login.html" class="bnav-item  bnav-login-show">
-    <span class="bni">👤</span><span>Login</span>
-  </a>
-  <a href="dashboard.html" class="bnav-item  bnav-user-show" style="display:none;">
-    <span class="bni">👤</span><span>Profile</span>
+  <a href="returns.html" class="bnav-item">
+    <span class="bni">�</span><span>Returns</span>
   </a>
 </nav>
 <script>

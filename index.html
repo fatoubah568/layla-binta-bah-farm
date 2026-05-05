@@ -2082,7 +2082,6 @@ footer {
 </head>
 <body>
 
-
 <!-- NAVBAR -->
 <nav class="navbar">
   <a href="index.html" class="nav-logo">
@@ -2194,7 +2193,7 @@ footer {
     <div class="feature-card">
       <div class="feature-icon">🚚</div>
       <h3>Fast Delivery</h3>
-      <p>We deliver across Central Badibou, The Gambia .</p>
+      <p>We deliver across central badibou, The Gambia .</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">📲</div>
@@ -2222,7 +2221,7 @@ footer {
     <div class="footer-brand">
       <span class="brand-name">🌿Laylay Binta bah farm</span>
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">The Gambia</div>
-      <p>Your trusted Gambian farm marketplace. We deliver fresh goats, chickens, eggs, fruits, and farm foods directly to your home.</p>
+      <p>Your trusted Gambian farm marketplace. We deliver fresh goats, chickens, eggs, fruits, and farm foods directly to your door.</p>
     </div>
     <div class="footer-col">
       <h4>Quick Links</h4>
@@ -2254,7 +2253,7 @@ footer {
   </div>
   <div class="footer-bottom">
     <p>© 2026 layla binta bah Farm. All rights reserved. Made with ❤️ in The Gambia.</p>
-    <p>Serving The Central Badibou with Fresh Farm Products 🌍</p>
+    <p>Serving The Gambia with Fresh Farm Products 🌍</p>
   </div>
 </footer>
 
@@ -2413,7 +2412,7 @@ const DEFAULT_PRODUCTS = [
     stock: 100,
     emoji: "🥭",
     image: "images/mango.jpg",
-    description: "Sweet Gambian banana  harvested fresh from our orchard. Juicy, aromatic, and naturally ripened. No artificial treatment.",
+    description: "Sweet Gambian mangoes harvested fresh from our orchard. Juicy, aromatic, and naturally ripened. No artificial treatment.",
     details: "Weight: 5kg | Variety: Keitt/Tommy | Season: Fresh | Origin: Gambia",
     featured: true
   },
@@ -2437,7 +2436,7 @@ const DEFAULT_PRODUCTS = [
     stock: 60,
     emoji: "🍉",
     image: "images/watermelon.jpg",
-    description: "Fresh, juicy Gambian banana. Sweet and refreshing, perfect for the hot African climate. No pesticides used.",
+    description: "Fresh, juicy Gambian watermelon. Sweet and refreshing, perfect for the hot African climate. No pesticides used.",
     details: "Weight: 4-6kg | Type: Crimson Sweet | Pesticides: None",
     featured: false
   },
@@ -2449,7 +2448,7 @@ const DEFAULT_PRODUCTS = [
     stock: 30,
     emoji: "🍎",
     image: "images/fruit-basket.jpg",
-    description: "Curated basket of seasonal farm fruits including  bananas, and oranges. Perfect as a gift or for the family.",
+    description: "Curated basket of seasonal farm fruits including mangoes, papayas, bananas, and oranges. Perfect as a gift or for the family.",
     details: "Contents: Seasonal mix | Weight: ~4kg | All fresh picked",
     featured: true
   },
@@ -2636,13 +2635,118 @@ const DEFAULT_ADMIN = {
   createdAt: new Date().toISOString()
 };
 
+const AuthManager = {
+  initUsers() {
+    const users = localStorage.getItem('users');
+    if (!users) {
+      localStorage.setItem('users', JSON.stringify([DEFAULT_ADMIN]));
+    } else {
+      // Ensure admin always exists
+      const parsed = JSON.parse(users);
+      const hasAdmin = parsed.find(u => u.email === 'bah899166@gmail.com');
+      if (!hasAdmin) {
+        parsed.push(DEFAULT_ADMIN);
+        localStorage.setItem('users', JSON.stringify(parsed));
+      }
+    }
+  },
 
-  
+  getUsers() {
+    this.initUsers();
+    return JSON.parse(localStorage.getItem('users') || '[]');
+  },
 
+  saveUsers(users) {
+    localStorage.setItem('users', JSON.stringify(users));
+  },
 
+  getCurrentUser() {
+    const u = localStorage.getItem('currentUser');
+    return u ? JSON.parse(u) : null;
+  },
 
+  register(name, email, password) {
+    const users = this.getUsers();
+    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+      return { success: false, error: 'Email already registered.' };
+    }
+    const newUser = {
+      id: 'u' + Date.now(),
+      name,
+      email,
+      password,
+      role: 'customer',
+      createdAt: new Date().toISOString()
+    };
+    users.push(newUser);
+    this.saveUsers(users);
+    return { success: true, user: newUser };
+  },
 
-  
+  login(email, password) {
+    const users = this.getUsers();
+    const user = users.find(
+      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    );
+    if (!user) return { success: false, error: 'Invalid email or password.' };
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    return { success: true, user };
+  },
+
+  logout() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'login.html';
+  },
+
+  isLoggedIn() {
+    return !!this.getCurrentUser();
+  },
+
+  isAdmin() {
+    const u = this.getCurrentUser();
+    return u && u.role === 'admin';
+  },
+
+  requireAuth(redirect = 'login.html') {
+    if (!this.isLoggedIn()) {
+      window.location.href = redirect;
+      return false;
+    }
+    return true;
+  },
+
+  requireAdmin() {
+    if (!this.isAdmin()) {
+      window.location.href = 'index.html';
+      return false;
+    }
+    return true;
+  },
+
+  updateNavAuth() {
+    const user = this.getCurrentUser();
+    const loginLinks = document.querySelectorAll('.nav-login-link');
+    const userMenus = document.querySelectorAll('.nav-user-menu');
+    const adminLinks = document.querySelectorAll('.nav-admin-link');
+
+    if (user) {
+      loginLinks.forEach(el => el.classList.add('hidden'));
+      userMenus.forEach(el => {
+        el.classList.remove('hidden');
+        const nameEl = el.querySelector('.user-name');
+        if (nameEl) nameEl.textContent = user.name.split(' ')[0];
+      });
+      if (user.role === 'admin') {
+        adminLinks.forEach(el => el.classList.remove('hidden'));
+      }
+    } else {
+      loginLinks.forEach(el => el.classList.remove('hidden'));
+      userMenus.forEach(el => el.classList.add('hidden'));
+      adminLinks.forEach(el => el.classList.add('hidden'));
+    }
+  }
+};
+
 // Initialize users on load
 AuthManager.initUsers();
 
@@ -2849,8 +2953,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFeaturedProducts();
 </script>
 
-
-
 <nav class="bottom-nav">
   <a href="index.html" class="bnav-item active">
     <span class="bni">🏡</span><span>Home</span>
@@ -2863,16 +2965,24 @@ document.addEventListener('DOMContentLoaded', () => {
     <span class="bnav-badge" id="bnav-cart-count">0</span>
     <span>Cart</span>
   </a>
-  <a href="login.html" class="bnav-item  bnav-login-show">
-    <span class="bni">👤</span><span>Login</span>
-  </a>
-  <a href="dashboard.html" class="bnav-item  bnav-user-show" style="display:none;">
-    <span class="bni">👤</span><span>Profile</span>
+  <a href="returns.html" class="bnav-item">
+    <span class="bni">🔄</span><span>Returns</span>
   </a>
 </nav>
 <script>
 (function(){
-  var cart = JSON.parse(localStorage.getItem('cart')||'[]');
+var cart = JSON.parse(localStorage.getItem('cart')||'[]');
+var count = cart.reduce(function(s,i){return s+i.quantity;},0);
+if(count>0){
+  var b=document.getElementById('bnav-cart-count');
+  if(b){b.textContent=count;b.style.display='flex';}
+  var cb=document.querySelectorAll('.cart-count');
+  cb.forEach(function(el){el.textContent=count;el.style.display='flex';});
+}
+var user = JSON.parse(localStorage.getItem('currentUser')||'null');
+document.querySelectorAll('.bnav-login-show').forEach(function(el){
+  el.textContent = user ? 'Account' : 'Login';
+});
   var count = cart.reduce(function(s,i){return s+i.quantity;},0);
   if(count>0){
     var b=document.getElementById('bnav-cart-count');
@@ -2885,8 +2995,3 @@ document.addEventListener('DOMContentLoaded', () => {
     el.textContent = user ? 'Account' : 'Login';
   });
 })();
-
-
-
-
-  
